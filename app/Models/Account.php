@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToEmployer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Account extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToEmployer;
 
     /**
      * The attributes that are mass assignable.
@@ -24,6 +25,7 @@ class Account extends Model
         'address',
         'billing_address',
         'owner_id',
+        'employer_id',
     ];
 
     /**
@@ -45,6 +47,14 @@ class Account extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    /**
+     * Get the employer that owns the account.
+     */
+    public function employer(): BelongsTo
+    {
+        return $this->belongsTo(Employer::class, 'employer_id');
     }
 
     /**

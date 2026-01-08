@@ -24,6 +24,7 @@ class Contact extends Model
         'job_title',
         'account_id',
         'owner_id',
+        'employer_id',
     ];
 
     /**
@@ -61,6 +62,14 @@ class Contact extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    /**
+     * Get the employer that owns the contact.
+     */
+    public function employer(): BelongsTo
+    {
+        return $this->belongsTo(Employer::class, 'employer_id');
     }
 
     /**

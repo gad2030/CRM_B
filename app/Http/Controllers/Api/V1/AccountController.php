@@ -23,8 +23,14 @@ class AccountController extends ApiController
      */
     public function index(Request $request): JsonResponse
     {
+        $user = $request->user();
         $filters = $request->only(['name']);
-        $filters['owner_id'] = $request->user()->isAdmin() ? null : $request->user()->id;
+        $filters['owner_id'] = $user->isAdmin() ? null : $user->id;
+        
+        // Filter by current employer (global scope will also handle this)
+        if ($user->currentEmployer) {
+            $filters['employer_id'] = $user->currentEmployer->id;
+        }
 
         $accounts = $this->accountRepository->getAll($filters, 15);
 
@@ -39,8 +45,14 @@ class AccountController extends ApiController
      */
     public function store(StoreAccountRequest $request): JsonResponse
     {
+        $user = $request->user();
         $data = $request->validated();
-        $data['owner_id'] = $request->user()->id;
+        $data['owner_id'] = $user->id;
+        
+        // Set employer_id from current employer
+        if ($user->currentEmployer) {
+            $data['employer_id'] = $user->currentEmployer->id;
+        }
 
         $account = $this->accountRepository->create($data);
 

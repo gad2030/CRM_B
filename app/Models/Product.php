@@ -26,6 +26,7 @@ class Product extends Model
         'category_id',
         'owner_id',
         'is_active',
+        'employer_id',
     ];
 
     /**
@@ -59,6 +60,14 @@ class Product extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    /**
+     * Get the employer that owns the product.
+     */
+    public function employer(): BelongsTo
+    {
+        return $this->belongsTo(Employer::class, 'employer_id');
     }
 
     /**

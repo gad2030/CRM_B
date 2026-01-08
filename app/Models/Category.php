@@ -21,6 +21,7 @@ class Category extends Model
         'name',
         'description',
         'owner_id',
+        'employer_id',
     ];
 
     /**
@@ -43,6 +44,14 @@ class Category extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    /**
+     * Get the employer that owns the category.
+     */
+    public function employer(): BelongsTo
+    {
+        return $this->belongsTo(Employer::class, 'employer_id');
     }
 
     /**

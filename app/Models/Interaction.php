@@ -25,6 +25,7 @@ class Interaction extends Model
         'contact_id',
         'lead_id',
         'opportunity_id',
+        'employer_id',
     ];
 
     /**
@@ -79,6 +80,14 @@ class Interaction extends Model
     public function opportunity(): BelongsTo
     {
         return $this->belongsTo(Opportunity::class, 'opportunity_id');
+    }
+
+    /**
+     * Get the employer that owns the interaction.
+     */
+    public function employer(): BelongsTo
+    {
+        return $this->belongsTo(Employer::class, 'employer_id');
     }
 }
 

@@ -25,6 +25,7 @@ class Lead extends Model
         'status',
         'source',
         'owner_id',
+        'employer_id',
     ];
 
     /**
@@ -54,6 +55,14 @@ class Lead extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    /**
+     * Get the employer that owns the lead.
+     */
+    public function employer(): BelongsTo
+    {
+        return $this->belongsTo(Employer::class, 'employer_id');
     }
 
     /**

@@ -3,12 +3,14 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\V1\AccountController;
 use App\Http\Controllers\Api\V1\ContactController;
+use App\Http\Controllers\Api\V1\EmployerController;
 use App\Http\Controllers\Api\V1\InteractionController;
 use App\Http\Controllers\Api\V1\LeadController;
 use App\Http\Controllers\Api\V1\OpportunityController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProductPriceController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Middleware\LoadCurrentEmployer;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,10 +37,19 @@ Route::prefix('v1')->group(function () {
 // Protected Routes (Requires Sanctum Auth)
 // ==========================================
 
-Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
+Route::prefix('v1')->middleware(['auth:sanctum', LoadCurrentEmployer::class])->group(function () {
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+
+    // Employers
+    Route::post('/employers', [EmployerController::class, 'store']);
+    Route::get('/employers/my', [EmployerController::class, 'my']);
+    Route::post('/employers/{id}/invite', [EmployerController::class, 'invite']);
+    Route::post('/employers/join', [EmployerController::class, 'join']);
+    Route::get('/employers/{id}/employees', [EmployerController::class, 'employees']);
+    Route::patch('/employers/{id}/employees/{userId}/role', [EmployerController::class, 'updateEmployeeRole']);
+    Route::delete('/employers/{id}/employees/{userId}', [EmployerController::class, 'removeEmployee']);
 
     // Accounts
     Route::apiResource('accounts', AccountController::class);

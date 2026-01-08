@@ -25,6 +25,7 @@ class Opportunity extends Model
         'account_id',
         'contact_id',
         'owner_id',
+        'employer_id',
     ];
 
     /**
@@ -65,6 +66,14 @@ class Opportunity extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    /**
+     * Get the employer that owns the opportunity.
+     */
+    public function employer(): BelongsTo
+    {
+        return $this->belongsTo(Employer::class, 'employer_id');
     }
 
     /**

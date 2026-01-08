@@ -6,9 +6,13 @@ use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
+use App\Models\Employer;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends ApiController
@@ -18,18 +22,55 @@ class AuthController extends ApiController
      */
     public function register(RegisterRequest $request)
     {
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        DB::beginTransaction();
+        try {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
 
-        $token = $user->createToken('auth-token')->plainTextToken;
+            // Automatically create an Employer for the new user
+            $employer = Employer::create([
+                'name' => $request->name . "'s Company", // Default name, can be changed later
+                'owner_id' => $user->id,
+            ]);
 
-        return $this->ok([
-            'user' => new UserResource($user),
-            'token' => $token,
-        ], 'User registered successfully', 201);
+            // Attach user as owner with 'admin' role
+            $employer->users()->attach($user->id, [
+                'role' => 'admin',
+                'joined_at' => now(),
+                'invited_by' => null,
+            ]);
+
+            // Set as current employer
+            $user->update(['current_employer_id' => $employer->id]);
+
+            // Create default admin role for this employer
+            $adminRole = Role::create([
+                'employer_id' => $employer->id,
+                'name' => 'admin',
+                'is_system' => true,
+            ]);
+
+            // Attach all permissions to admin role
+            $permissions = Permission::all();
+            if ($permissions->isNotEmpty()) {
+                $adminRole->permissions()->attach($permissions->pluck('id'));
+            }
+
+            DB::commit();
+
+            $token = $user->createToken('auth-token')->plainTextToken;
+
+            return $this->ok([
+                'user' => new UserResource($user->load('currentEmployer')),
+                'token' => $token,
+            ], 'User registered successfully', 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->fail('Registration failed: ' . $e->getMessage(), 500);
+        }
     }
 
     /**
